@@ -201,5 +201,15 @@ namespace DxfLib
 
             return result;
         }
+
+        public (float centerX, float centerY) GetCenter(DxfFile dxfFile)
+        {
+            var dxfBoundingBox = dxfFile.GetBoundingBox();
+            float centerX = (float)(dxfBoundingBox.MinimumPoint.X +
+                                    (dxfBoundingBox.MaximumPoint.X - dxfBoundingBox.MinimumPoint.X) / 2);
+            float centerY = (float)(dxfBoundingBox.MinimumPoint.Y +
+                                    (dxfBoundingBox.MaximumPoint.Y - dxfBoundingBox.MinimumPoint.Y) / 2);
+            return (centerX, centerY);
+        }
     }
 }
