@@ -1,3 +1,4 @@
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -8,6 +9,7 @@ namespace DxfTest
 {
     public class Renderer
     {
+        public static int Limit = 1000;
         private DxfFile _dxfFile;
 
         public Renderer(float scaleFactor, float offsetX, float offsetY)
@@ -67,6 +69,7 @@ namespace DxfTest
             graphics.DrawLines(Pens.Black, points);
         }
 
+        static Random random = new Random(DateTime.Now.Millisecond);
         public void RenderEntity(DxfLwPolyline dxfLwPolyline, Graphics graphics, int height)
         {
             var dxfPolylineVertices = dxfLwPolyline.Vertices;
@@ -74,7 +77,20 @@ namespace DxfTest
                 .Select(t => new PointF((float)t.X * ScaleFactor + OffsetX,
                     height - (float)t.Y * ScaleFactor + OffsetY))
                 .ToArray();
-            graphics.DrawLines(Pens.Black, points);
+            var color = Color.FromArgb(120, random.Next(255), random.Next(255), random.Next(255));
+
+            for (var i = 0; i < points.Length && i < Limit; i++)
+            {
+                var pointF = points[i];
+                graphics.FillEllipse(new SolidBrush(color), pointF.X - 3, pointF.Y - 3, 6, 6);
+                graphics.DrawString(i.ToString(), new Font(FontFamily.GenericMonospace, 12), Brushes.Black,
+                    pointF.X - 20, pointF.Y - 5);
+            }
+
+            if (Limit > 1)
+            {
+                graphics.DrawLines(Pens.Black, points.Take(Limit).ToArray());
+            }
         }
 
         public void RenderEntity(DxfLine dxfLine, Graphics graphics, int height)

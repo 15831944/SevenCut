@@ -139,5 +139,15 @@ namespace DxfTest
             // Arc = -(trackBarRotOffset.Value - 180);
             pictureBoxMain.Refresh();
         }
+
+        private void trackBarAmount_Scroll(object sender, EventArgs e)
+        {
+            if (dxfFile != null)
+            {
+                Renderer.Limit = trackBarAmount.Value;
+                Renderer.Render(dxfFile, bitmap, pictureBoxMain.Width, pictureBoxMain.Height);
+                pictureBoxMain.Refresh();
+            }
+        }
     }
 }
