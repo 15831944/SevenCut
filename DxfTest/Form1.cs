@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using DxfLib;
 using IxMilia.Dxf;
@@ -14,6 +15,10 @@ namespace DxfTest
         private bool dragging;
         private DxfFile dxfFile;
         private Point mouseStart;
+
+        private IList<DxfLwPolyline> polylines;
+
+        private int selectedPolylineIndex = -1;
 
         public Form1()
         {
@@ -36,7 +41,7 @@ namespace DxfTest
 
             if (dxfFile != null)
             {
-                Renderer.Render(dxfFile, bitmap, pictureBoxMain.Width, pictureBoxMain.Height);
+                Render();
                 pictureBoxMain.Refresh();
             }
         }
@@ -51,6 +56,19 @@ namespace DxfTest
             return entitiesCount;
         }
 
+        private void Render()
+        {
+            if (selectedPolylineIndex != -1)
+            {
+                using (var graphics = Graphics.FromImage(bitmap))
+                {
+                    graphics.Clear(Color.White);
+                    Renderer.RenderEntity(polylines[selectedPolylineIndex], graphics,
+                        pictureBoxMain.Height);
+                }
+            }
+        }
+
         private void buttonOpenDxf_Click(object sender, EventArgs e)
         {
             var opf = new OpenFileDialog();
@@ -59,11 +77,21 @@ namespace DxfTest
             {
                 dxfFile = DxfFile.Load(opf.FileName);
 
+                polylines = dxfFile.Entities.OfType<DxfLwPolyline>().ToList();
+
+                listBoxLwPolylines.Items.Clear();
+                for (var index = 0; index < polylines.Count; index++)
+                {
+                    listBoxLwPolylines.Items.Add(index.ToString());
+                }
+
                 var (centerX, centerY) = new Mather().GetCenter(dxfFile);
                 Renderer.OffsetX = -centerX + pictureBoxMain.Width / 2f;
                 Renderer.OffsetY = centerY - pictureBoxMain.Height / 2f;
 
-                Renderer.Render(dxfFile, bitmap, pictureBoxMain.Width, pictureBoxMain.Height);
+                Render();
+
+                // Renderer.Render(dxfFile, bitmap, pictureBoxMain.Width, pictureBoxMain.Height);
 
                 // var encodedFile = new DxfToJsonConverter().EncodeFileJson(dxfFile);
                 // File.WriteAllText("json.json", encodedFile);
@@ -80,8 +108,7 @@ namespace DxfTest
         {
             if (bitmap != null) e.Graphics.DrawImageUnscaled(bitmap, 0, 0);
 
-            e.Graphics.DrawArc(Pens.Red, pictureBoxMain.Width / 2f - 50, pictureBoxMain.Height / 2f - 50, 100, 100, 0,
-                Arc);
+            //e.Graphics.DrawArc(Pens.Red, pictureBoxMain.Width / 2f - 50, pictureBoxMain.Height / 2f - 50, 100, 100, 0, Arc);
         }
 
         private void pictureBoxMain_MouseDown(object sender, MouseEventArgs e)
@@ -104,7 +131,7 @@ namespace DxfTest
 
                 if (dxfFile != null)
                 {
-                    Renderer.Render(dxfFile, bitmap, pictureBoxMain.Width, pictureBoxMain.Height);
+                    Render();
                     pictureBoxMain.Refresh();
                 }
             }
@@ -128,7 +155,7 @@ namespace DxfTest
 
                 if (dxfFile != null)
                 {
-                    Renderer.Render(dxfFile, bitmap, pictureBoxMain.Width, pictureBoxMain.Height);
+                    Render();
                     pictureBoxMain.Refresh();
                 }
             }
@@ -145,8 +172,47 @@ namespace DxfTest
             if (dxfFile != null)
             {
                 Renderer.Limit = trackBarAmount.Value;
-                Renderer.Render(dxfFile, bitmap, pictureBoxMain.Width, pictureBoxMain.Height);
+                Render();
                 pictureBoxMain.Refresh();
+            }
+        }
+
+        private void listBoxLwPolylines_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var selectedIndex = listBoxLwPolylines.SelectedIndex;
+            if (selectedIndex != -1)
+            {
+                trackBarAmount.Maximum = polylines[selectedIndex].Vertices.Count;
+                labelInfo.Text = $"Vertices: {polylines[selectedIndex].Vertices}\n" +
+                                 $"ConstantWidth: {polylines[selectedIndex].ConstantWidth}\n" +
+                                 $"EntityType: {polylines[selectedIndex].EntityType}\n" +
+                                 $"ExtrusionDirection: {polylines[selectedIndex].ExtrusionDirection}\n" +
+                                 $"Flags: {polylines[selectedIndex].Flags}\n" +
+                                 $"IsClosed: {polylines[selectedIndex].IsClosed}\n" +
+                                 $"IsPLineGen: {polylines[selectedIndex].IsPLineGen}\n" +
+                                 $"Thickness: {polylines[selectedIndex].Thickness}\n";
+                listBoxLwVertices.Items.Clear();
+                for (var i = 0; i < polylines[selectedIndex].Vertices.Count; i++)
+                {
+                    listBoxLwVertices.Items.Add(i);
+                }
+            }
+
+            selectedPolylineIndex = selectedIndex;
+            Render();
+            pictureBoxMain.Refresh();
+        }
+
+        private void listBoxLwVertices_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var selectedIndex = listBoxLwVertices.SelectedIndex;
+            if (selectedIndex != -1 && selectedPolylineIndex != -1)
+            {
+                labelInfo.Text = $"X: {polylines[selectedPolylineIndex].Vertices[selectedIndex].X}\n" +
+                                 $"Y: {polylines[selectedPolylineIndex].Vertices[selectedIndex].Y}\n" +
+                                 $"Bulge: {polylines[selectedPolylineIndex].Vertices[selectedIndex].Bulge}\n" +
+                                 $"StartingWidth: {polylines[selectedPolylineIndex].Vertices[selectedIndex].StartingWidth}\n" +
+                                 $"EndingWidth: {polylines[selectedPolylineIndex].Vertices[selectedIndex].EndingWidth}\n";
             }
         }
     }

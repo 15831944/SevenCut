@@ -70,6 +70,7 @@ namespace DxfTest
         }
 
         static Random random = new Random(DateTime.Now.Millisecond);
+
         public void RenderEntity(DxfLwPolyline dxfLwPolyline, Graphics graphics, int height)
         {
             var dxfPolylineVertices = dxfLwPolyline.Vertices;
@@ -77,6 +78,14 @@ namespace DxfTest
                 .Select(t => new PointF((float)t.X * ScaleFactor + OffsetX,
                     height - (float)t.Y * ScaleFactor + OffsetY))
                 .ToArray();
+
+            // int index = 0;
+            // DxfLwPolylineVertex currentVertex = dxfPolylineVertices[index];
+            // if (currentVertex.Bulge == 0)
+            // {
+            //     
+            // }
+
             var color = Color.FromArgb(120, random.Next(255), random.Next(255), random.Next(255));
 
             for (var i = 0; i < points.Length && i < Limit; i++)
