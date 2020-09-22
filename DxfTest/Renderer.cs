@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using IxMilia.Dxf;
@@ -21,7 +21,7 @@ namespace DxfTest
         public float OffsetX { get; set; }
         public float OffsetY { get; set; }
 
-        public void RenderEntities(IList<DxfEntity> dxfEntities, Graphics graphics, int height)
+        public void RenderEntities(IEnumerable<DxfEntity> dxfEntities, Graphics graphics, int height)
         {
             foreach (var dxfEntity in dxfEntities) RenderEntity(dxfEntity, graphics, height);
         }

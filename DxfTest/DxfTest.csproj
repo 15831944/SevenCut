@@ -6,7 +6,7 @@
 
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>DxfTest</AssemblyName>
-    <RootNamespace>WindowsFormsApp1</RootNamespace>
+    <RootNamespace>DxfTest</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="IxMilia.Dxf" Version="0.7.4" />
